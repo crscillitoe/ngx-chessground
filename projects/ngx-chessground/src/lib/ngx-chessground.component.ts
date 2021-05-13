@@ -34,6 +34,11 @@ export class NgxChessgroundComponent implements AfterViewInit {
   ngAfterViewInit() {
     this.redraw();
   }
+
+  public toggleOrientation() {
+    this.ngxChessgroundService.toggleOrientation();
+  }
+
   private redraw() {
     if (this.elementView.nativeElement && this.runFn) {
       this.ngxChessgroundService.redraw(
