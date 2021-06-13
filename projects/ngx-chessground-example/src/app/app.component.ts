@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { Api } from 'chessground/api';
-
 import { AfterViewInit } from '@angular/core';
 import { ViewChild } from '@angular/core';
 import { ChangeDetectionStrategy } from '@angular/core';
@@ -68,6 +67,8 @@ export class AppComponent implements AfterViewInit {
     withSameRole,
     notSameRole,
     whileHolding,
+  ];
+  newList: Unit[] = [
     lastMoveDrop,
     presetUserShapes,
     changingShapesHigh,
@@ -81,8 +82,6 @@ export class AppComponent implements AfterViewInit {
     fullRandom,
     autoSwitch,
     viewOnlyFullRandom,
-  ];
-  newList: Unit[] = [
     loadPgnRealTime,
     loadPgnOneSecondPerMove,
     loadPgnProportionalTime,
