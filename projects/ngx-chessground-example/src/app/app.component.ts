@@ -40,6 +40,7 @@ import {
   withSameRole,
 } from 'ngx-chessground';
 import { in3dDefaults } from '../../../ngx-chessground/src/units/in3d';
+import { ShortMove } from 'chess.js';
 
 @Component({
   selector: 'app-root',
@@ -90,6 +91,8 @@ export class AppComponent implements AfterViewInit {
   title = 'ngx-chessground-example';
   ngAfterViewInit(): void {
     this.ngxChessgroundComponent.runFn = loadPgnRealTime.run;
+    // this.chessTableComponent.move({ from: 'e2', to: 'e4' });
+    // this.chessTableComponent.move({ from: 'c7', to: 'c5' });
   }
   public onClick(name: string, runFn: (el: HTMLElement) => Api) {
     this.ngxChessgroundComponent.runFn = runFn;
@@ -98,11 +101,11 @@ export class AppComponent implements AfterViewInit {
   public toggleOrientation() {
     this.chessTableComponent.toggleOrientation();
   }
-  public onMove(moveValue: string) {
+  public onMove(moveValue: ShortMove) {
     console.log(moveValue);
     // play against yourself
     this.toggleOrientation();
     // play sicilian
-    // this.chessTableComponent.move('c7', 'c5');
+    // this.chessTableComponent.move({ from: 'c7', to: 'c5' });
   }
 }

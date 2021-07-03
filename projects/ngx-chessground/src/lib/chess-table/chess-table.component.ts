@@ -30,7 +30,7 @@ import { Square, ShortMove } from 'chess.js';
 export class ChessTableComponent implements OnInit, AfterViewInit {
   @ViewChild('chessboard')
   elementView!: ElementRef;
-  @Output() moves = new EventEmitter<string>();
+  @Output() moves = new EventEmitter<ShortMove>();
 
   private patch = init([classModule, attributesModule, eventListenersModule]);
   private vnode!: VNode;
@@ -53,8 +53,6 @@ export class ChessTableComponent implements OnInit, AfterViewInit {
         },
         events: {
           move: (orig: Key, dest: Key, capturedPiece?: Piece) => {
-            this.moves.emit(orig.toString() + dest.toString());
-
             const playedMove = this.chess.move({
               from: orig as Square,
               to: dest as Square,
@@ -77,12 +75,17 @@ export class ChessTableComponent implements OnInit, AfterViewInit {
                 to: dest as Square,
                 promotion: newPiece,
               });
+              this.moves.emit({
+                from: orig as Square,
+                to: dest as Square,
+                promotion: newPiece,
+              });
+            } else {
+              this.moves.emit({
+                from: orig as Square,
+                to: dest as Square,
+              });
             }
-            // console.log(capturedPiece);
-            // console.log(this.chess.ascii());
-            // console.log(this.chess.fen());
-            // console.log(this.chess.pgn());
-            // console.log(this.chess.history());
             this.cg.set({ fen: this.chess.fen() });
           },
         },
@@ -100,6 +103,17 @@ export class ChessTableComponent implements OnInit, AfterViewInit {
   public move(move: ShortMove) {
     this.chess.move(move);
     this.cg.set({ fen: this.chess.fen() });
+    const color = this.chess.history().length % 2 === 1 ? 'black' : 'white';
+    this.cg.set({
+      movable: {
+        color,
+        free: false,
+        dests: toDests(this.chess),
+      },
+      draggable: {
+        showGhost: true,
+      },
+    });
   }
   public toggleOrientation() {
     this.cg.toggleOrientation();
