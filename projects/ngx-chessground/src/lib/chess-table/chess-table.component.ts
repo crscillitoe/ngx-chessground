@@ -19,7 +19,7 @@ import { Chessground } from 'chessground';
 import { Api } from 'chessground/api';
 
 import { Key, Piece } from 'chessground/types';
-import { Chess, playOtherSide, toDests } from '../../units/util';
+import { Chess, playOtherSide, toColor, toDests } from '../../units/util';
 import { Square, ShortMove } from 'chess.js';
 @Component({
   selector: 'ngx-chessground-chess-table',
@@ -30,7 +30,7 @@ import { Square, ShortMove } from 'chess.js';
 export class ChessTableComponent implements OnInit, AfterViewInit {
   @ViewChild('chessboard')
   elementView!: ElementRef;
-  @Output() moves = new EventEmitter<ShortMove>();
+  @Output() moves = new EventEmitter<{ color: string; move: ShortMove }>();
 
   private patch = init([classModule, attributesModule, eventListenersModule]);
   private vnode!: VNode;
@@ -53,6 +53,7 @@ export class ChessTableComponent implements OnInit, AfterViewInit {
         },
         events: {
           move: (orig: Key, dest: Key, capturedPiece?: Piece) => {
+            const color = toColor(this.chess);
             const playedMove = this.chess.move({
               from: orig as Square,
               to: dest as Square,
@@ -75,18 +76,27 @@ export class ChessTableComponent implements OnInit, AfterViewInit {
                 to: dest as Square,
                 promotion: newPiece,
               });
+              this.cg.set({ fen: this.chess.fen() });
               this.moves.emit({
-                from: orig as Square,
-                to: dest as Square,
-                promotion: newPiece,
+                // eslint-disable-next-line object-shorthand
+                color: color,
+                move: {
+                  from: orig as Square,
+                  to: dest as Square,
+                  promotion: newPiece,
+                },
               });
             } else {
+              this.cg.set({ fen: this.chess.fen() });
               this.moves.emit({
-                from: orig as Square,
-                to: dest as Square,
+                // eslint-disable-next-line object-shorthand
+                color: color,
+                move: {
+                  from: orig as Square,
+                  to: dest as Square,
+                },
               });
             }
-            this.cg.set({ fen: this.chess.fen() });
           },
         },
       });
@@ -100,25 +110,35 @@ export class ChessTableComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.redraw();
   }
+  public cancelMove() {
+    this.chess.undo();
+    this.refreshChessGround();
+  }
+
   public move(move: ShortMove) {
     this.chess.move(move);
-    this.cg.set({ fen: this.chess.fen() });
-    const color = this.chess.history().length % 2 === 1 ? 'black' : 'white';
-    this.cg.set({
-      movable: {
-        color,
-        free: false,
-        dests: toDests(this.chess),
-      },
-      draggable: {
-        showGhost: true,
-      },
-    });
+    this.refreshChessGround();
   }
   public toggleOrientation() {
     this.cg.toggleOrientation();
   }
 
+  private refreshChessGround() {
+    const movableColor = toColor(this.chess);
+    this.cg.set({
+      fen: this.chess.fen(),
+      turnColor: movableColor,
+      movable: {
+        color: movableColor,
+        free: false,
+        dests: toDests(this.chess),
+      },
+      draggable: {
+        enabled: true,
+        showGhost: true,
+      },
+    });
+  }
   private redraw() {
     if (this.elementView.nativeElement) {
       this.vnode = this.patch(
